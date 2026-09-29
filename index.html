@@ -95,8 +95,8 @@ let open=false, lit=[true,true], blowT=0, bend=0, held=false, rms=0, floor=.01, 
 $('wishTxt').textContent='Make a wish, '+NAME+'!';
 function setStatus(s){$('status').textContent=s}
 function tuck(){ $('letter').classList.remove('up') }
-$('cover').onclick=()=>{open=true;book.classList.add('open');document.body.classList.add('open');startMic()};
-$('back').onclick=()=>{open=false;book.classList.remove('open');document.body.classList.remove('open');tuck();stopMic()};
+$('cover').onclick=()=>{rain();open=true;book.classList.add('open');document.body.classList.add('open');startMic()};
+$('back').onclick=()=>{Q=[];rainUntil=0;open=false;book.classList.remove('open');document.body.classList.remove('open');tuck();stopMic()};
 $('hot').onclick=()=>$('letter').classList.add('up');
 $('letter').onclick=tuck;
 $('letter').onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();tuck()}};
@@ -147,9 +147,16 @@ const cv=$('cf'), cc=cv.getContext('2d'); let P=[];
 function fit(){cv.width=innerWidth*devicePixelRatio;cv.height=innerHeight*devicePixelRatio}fit();addEventListener('resize',fit);
 function confetti(){const n=matchMedia('(prefers-reduced-motion:reduce)').matches?40:160,cols=['#ff66c4','#d61f8f','#ffd6ec','#ffcf5a','#8fd6ff','#b58cff','#7ddc9a'];
   for(let i=0;i<n;i++)P.push({x:innerWidth*(.2+.6*Math.random()),y:innerHeight*.35,vx:(Math.random()-.5)*640,vy:-Math.random()*720-120,r:Math.random()*6,vr:(Math.random()-.5)*12,w:6+Math.random()*7,h:9+Math.random()*9,c:cols[i%cols.length],life:3.4+Math.random()*1.5})}
+let Q=[],rainUntil=0,acc=0;const ICONS=['🛍️','🛍️','🛍️','🛍️','✈️','🧳','🌴','🗺️','🏝️','🎫'];
+function rain(){const rm=matchMedia('(prefers-reduced-motion:reduce)').matches;rainUntil=performance.now()+(rm?900:3400)}
 function cfStep(dt){cc.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);cc.clearRect(0,0,innerWidth,innerHeight);
   P=P.filter(p=>p.life>0&&p.y<innerHeight+30);for(const p of P){p.vy+=900*dt;p.vx*=.992;p.x+=p.vx*dt;p.y+=p.vy*dt;p.r+=p.vr*dt;p.life-=dt;
-   cc.save();cc.translate(p.x,p.y);cc.rotate(p.r);cc.globalAlpha=Math.min(1,p.life);cc.fillStyle=p.c;cc.fillRect(-p.w/2,-p.h/2,p.w,p.h);cc.restore()}}
+   cc.save();cc.translate(p.x,p.y);cc.rotate(p.r);cc.globalAlpha=Math.min(1,p.life);cc.fillStyle=p.c;cc.fillRect(-p.w/2,-p.h/2,p.w,p.h);cc.restore()}
+  if(performance.now()<rainUntil){acc+=dt*24;while(acc>=1){acc--;Q.push({x:Math.random()*innerWidth,y:-50,vy:230+Math.random()*260,sw:Math.random()*40+10,ph:Math.random()*6.28,r:(Math.random()-.5)*.6,vr:(Math.random()-.5)*2.4,s:30+Math.random()*26,e:ICONS[Math.floor(Math.random()*ICONS.length)],t:0})}}
+  Q=Q.filter(p=>p.y<innerHeight+60);cc.textAlign='center';cc.textBaseline='middle';
+  for(const p of Q){p.t+=dt;p.y+=p.vy*dt;p.r+=p.vr*dt;const x=p.x+Math.sin(p.t*2.2+p.ph)*p.sw;
+   cc.save();cc.translate(x,p.y);cc.rotate(p.r*.5);cc.font=p.s+'px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';cc.shadowColor='rgba(80,20,50,.35)';cc.shadowBlur=8;cc.fillText(p.e,0,0);cc.restore()}}
+
 
 (function(){const box=$('stars'),cols=['#fff','#ffe9f4','#ff8ad0','#ffe27a','#fff6c9'],n=innerWidth<640?26:40,
  svg='<svg viewBox="0 0 24 24"><path d="M12 0C13 7 17 11 24 12C17 13 13 17 12 24C11 17 7 13 0 12C7 11 11 7 12 0Z" fill="currentColor"/></svg>';
